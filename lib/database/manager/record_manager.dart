@@ -11,10 +11,10 @@ class RecordManager {
     var record = Record(
         id: 1,
         date: DateTime.now().millisecondsSinceEpoch,
-        morningEat: 1,
-        noonEat: 1,
-        eveningEat: 1,
-        beforeSleepEat: 1);
+        morningEat: 0,
+        noonEat: 0,
+        eveningEat: 0,
+        beforeSleepEat: 0);
 
     return dbHelper.insert(record.toMap());
   }

@@ -1,3 +1,6 @@
+若要裝到手機裡面
+把手機插到電腦後
+跑flutter run --release
 # medicine_app
 
 A new Flutter project.

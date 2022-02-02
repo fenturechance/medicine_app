@@ -1,10 +1,10 @@
 class Record {
   final int? id;
   final int? date;
-  final bool? morningEat;
-  final bool? noonEat;
-  final bool? eveningEat;
-  final bool? beforeSleepEat;
+  final int? morningEat;
+  final int? noonEat;
+  final int? eveningEat;
+  final int? beforeSleepEat;
   Record(
       {this.id,
       this.date,

@@ -17,49 +17,102 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    String nowDate = DateFormat('yyyy/MM/dd EEEE').format(DateTime.now());
-    return Container(
-        padding: EdgeInsets.all(10.0),
-        width: size.width,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                nowDate,
-                style: TextStyle(color: Color(0xff27726c), fontSize: 25.0),
-              ),
-              SizedBox(
-                height: 15.0,
-              ),
-              generateButton(text: '早'),
-              generateButton(text: '中'),
-              generateButton(text: '晚'),
-              generateButton(text: '睡'),
-            ],
-          ),
-        ));
+class HomePage extends StatefulWidget {
+  _HomePageState createState() => _HomePageState();
+}
+
+dynamic getData() async {
+  List<Map> res = await RecordManager.instance.query();
+  if (res.length > 0) {
+    return Future.value(res);
+  } else {
+    await RecordManager.instance.insert();
+    return RecordManager.instance.query();
   }
 }
 
-Widget generateButton({String text = ''}) {
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  Future future = getData();
+  void setFuture() {
+    setState(() {
+      future = getData();
+    });
+  }
+
+  Widget build(BuildContext context) {
+    return Container(
+        child: FutureBuilder(
+      future: future,
+      builder: (BuildContext context, AsyncSnapshot snap) {
+        if (snap.hasData) {
+          return generateLayout(
+              context: context, data: snap.data[0], setFuture: setFuture);
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+      },
+    ));
+  }
+}
+
+Widget generateLayout({context, data, setFuture}) {
+  Size size = MediaQuery.of(context).size;
+  String nowDate = DateFormat('yyyy/MM/dd EEEE').format(DateTime.now());
   return Container(
-      margin: EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(10.0),
+      width: size.width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              nowDate,
+              style: const TextStyle(color: Color(0xff27726c), fontSize: 25.0),
+            ),
+            const SizedBox(
+              height: 15.0,
+            ),
+            generateButton(
+                text: '早', data: data, key: 'morningEat', setFuture: setFuture),
+            generateButton(
+                text: '中', data: data, key: 'noonEat', setFuture: setFuture),
+            generateButton(
+                text: '晚', data: data, key: 'eveningEat', setFuture: setFuture),
+            generateButton(
+                text: '睡',
+                data: data,
+                key: 'beforeSleepEat',
+                setFuture: setFuture),
+          ],
+        ),
+      ));
+}
+
+Widget generateButton(
+    {String text = '', Map? data, String? key, Function? setFuture}) {
+  int active = data![key];
+  int bgColor = active == 1 ? 0xffbee0d5 : 0xffffd6d7;
+  int textColor = active == 1 ? 0xff27726c : 0xffe06667;
+  return Container(
+      margin: const EdgeInsets.only(top: 20),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             elevation: 0,
-            primary: const Color(0xffffd6d7),
+            primary: Color(bgColor),
             minimumSize: const Size.fromHeight(100)),
         child: Text(
           text,
-          style: TextStyle(fontSize: 20, color: Color(0xffe06667)),
+          style: TextStyle(fontSize: 20, color: Color(textColor)),
         ),
-        onPressed: () {
-          RecordManager.instance.insert();
+        onPressed: () async {
+          await RecordManager.instance.update(key);
+          setFuture!();
         },
       ));
 }

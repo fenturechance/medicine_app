@@ -35,13 +35,19 @@ class RecordManager {
     return type == key ? setContrast(data[key]) : data[key];
   }
   //更新資料
-  Future update(type) async {
+  Future update({type}) async {
     List<Map> res = await query();
     Map data = res[0];
     int morningEat = setBoolResult(data, type, 'morningEat');
     int noonEat = setBoolResult(data, type, 'noonEat');
     int eveningEat = setBoolResult(data, type, 'eveningEat');
     int beforeSleepEat = setBoolResult(data, type, 'beforeSleepEat');
+    if (type == null) {
+      morningEat = 0;
+      noonEat = 0;
+      eveningEat = 0;
+      beforeSleepEat = 0;
+    }
     var record = Record(
         id: 1,
         date: DateTime.now().millisecondsSinceEpoch,

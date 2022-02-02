@@ -12,8 +12,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         home: Scaffold(
       backgroundColor: const Color(0xffa2c4ca),
-      body: HomePage(),
-    ));
+          body: HomePage(),    
+        ),
+        debugShowCheckedModeBanner: false);
   }
 }
 
@@ -24,6 +25,14 @@ class HomePage extends StatefulWidget {
 dynamic getData() async {
   List<Map> res = await RecordManager.instance.query();
   if (res.length > 0) {
+    String dateFromDB = DateFormat('yyyy/MM/dd')
+        .format(DateTime.fromMillisecondsSinceEpoch(res[0]['date']));
+
+    String nowDate = DateFormat('yyyy/MM/dd').format(DateTime.now());
+    if (dateFromDB != nowDate) {
+      await RecordManager.instance.update();
+      res = await RecordManager.instance.query();
+    }
     return Future.value(res);
   } else {
     await RecordManager.instance.insert();
@@ -64,9 +73,9 @@ class _HomePageState extends State<HomePage> {
 Widget generateLayout({context, data, setFuture}) {
   Size size = MediaQuery.of(context).size;
   String nowDate = DateFormat('yyyy/MM/dd EEEE').format(DateTime.now());
-  return Container(
+  return Stack(children: [
+    Container(
       padding: const EdgeInsets.all(10.0),
-      width: size.width,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +100,20 @@ Widget generateLayout({context, data, setFuture}) {
                 setFuture: setFuture),
           ],
         ),
-      ));
+      ),
+    ),
+    Positioned(
+        bottom: 10,
+        left: 10,
+        child: Container(
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/images/dinosaur.png'),
+                  fit: BoxFit.contain)),
+        ))
+  ]);
 }
 
 Widget generateButton(
@@ -111,7 +133,7 @@ Widget generateButton(
           style: TextStyle(fontSize: 20, color: Color(textColor)),
         ),
         onPressed: () async {
-          await RecordManager.instance.update(key);
+          await RecordManager.instance.update(type: key);
           setFuture!();
         },
       ));
